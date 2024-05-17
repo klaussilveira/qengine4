@@ -12,9 +12,6 @@ endif()
 option(STANDALONE
 		"Skip DOOM-3-BFG base/ folder and use assets/ instead" OFF)
 
-option(DOOM_CLASSIC
-		"Build with Doom 1 & 2" ON)
-
 option(FORCE_COLOR_OUTPUT
 		"Always produce ANSI-colored output (GNU/Clang only)." OFF)
 
@@ -32,9 +29,6 @@ option(SDL2
 		
 option(OPENAL
 		"Use OpenAL soft instead of XAudio2" OFF)
-
-option(FFMPEG
-		"Use FMPEG to render Bink videos" ON)
 
 option(BINKDEC
 		"Use included libbinkdec to render Bink videos" OFF)
@@ -313,8 +307,6 @@ endif()
 
 if(STANDALONE)
 	add_definitions(-DSTANDALONE)
-
-	set(DOOM_CLASSIC OFF)
 endif()
 
 if (USE_SYSTEM_ZLIB)
@@ -1432,16 +1424,6 @@ set(RBDOOM3_SOURCES
 			${GAMED3XP_SCRIPT_SOURCES}
 			)
 
-if(DOOM_CLASSIC)
-	add_definitions(-DUSE_DOOMCLASSIC)
-
-	list(APPEND RBDOOM3_INCLUDES ${DOOMCLASSIC_INCLUDES})
-	list(APPEND RBDOOM3_INCLUDES ${TIMIDITY_INCLUDES})
-	
-	list(APPEND RBDOOM3_SOURCES ${DOOMCLASSIC_SOURCES})
-	list(APPEND RBDOOM3_SOURCES ${TIMIDITY_SOURCES})
-endif()
-
 add_definitions(-D__DOOM__
 				#-DBUILD_FREETYPE
 				#-DFT2_BUILD_LIBRARY
@@ -1508,9 +1490,6 @@ if(MSVC)
 		
 		list(APPEND RBDOOM3_INCLUDES ${OPENAL_INCLUDES})
 		list(APPEND RBDOOM3_SOURCES	${OPENAL_SOURCES})
-		if(DOOM_CLASSIC)
-			list(APPEND RBDOOM3_SOURCES	${DOOMCLASSIC_OPENAL_SOURCES})
-		endif()		
 		
 		set(OpenAL_LIBRARIES
 			OpenAL32)
@@ -1524,42 +1503,6 @@ if(MSVC)
 	else()
 		list(APPEND RBDOOM3_INCLUDES ${XAUDIO2_INCLUDES})
 		list(APPEND RBDOOM3_SOURCES	${XAUDIO2_SOURCES})
-
-		if(DOOM_CLASSIC)
-			list(APPEND RBDOOM3_SOURCES	${DOOMCLASSIC_XAUDIO2_SOURCES})
-		endif()
-	endif()
-	
-	if(FFMPEG)
-		add_definitions(-DUSE_FFMPEG)
-	
-		if(CMAKE_CL_64)
-			include_directories(libs/ffmpeg-win64/include)
-			include_directories(libs/ffmpeg-win64/include/libswscale)
-			include_directories(libs/ffmpeg-win64/include/libavformat)
-			include_directories(libs/ffmpeg-win64/include/libavdevice)
-			include_directories(libs/ffmpeg-win64/include/libavcodec)
-			include_directories(libs/ffmpeg-win64/include/libswresample)
-			
-			link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/ffmpeg-win64/lib)
-		else()
-			include_directories(libs/ffmpeg-win32/include)
-			include_directories(libs/ffmpeg-win32/include/libswscale)
-			include_directories(libs/ffmpeg-win32/include/libavformat)
-			include_directories(libs/ffmpeg-win32/include/libavdevice)
-			include_directories(libs/ffmpeg-win32/include/libavcodec)
-			include_directories(libs/ffmpeg-win32/include/libswresample)
-			
-			link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/ffmpeg-win32/lib)
-		endif()
-		
-		set(FFmpeg_LIBRARIES
-				avcodec
-				avformat
-				avutil
-				swscale
-				swresample)
-		
 	endif()
 	
 	if(USE_MFC_TOOLS)
@@ -1690,13 +1633,6 @@ else()
 		${SYS_INCLUDES} ${SYS_SOURCES})
 	
 	if(UNIX)
-		if(FFMPEG)
-			find_package(FFMPEG REQUIRED)
-			add_definitions(-DUSE_FFMPEG)
-			
-			include_directories(${FFMPEG_INCLUDE_DIR})
-			link_directories(${FFMPEG_LIBRARIES_DIRS})
-		endif()
 
 		if(SDL2)
 			find_package(SDL2 REQUIRED)
@@ -1730,17 +1666,9 @@ else()
 
 			list(APPEND RBDOOM3_INCLUDES ${OPENAL_INCLUDES})
 			list(APPEND RBDOOM3_SOURCES ${OPENAL_SOURCES})
-				
-			if(DOOM_CLASSIC)
-				list(APPEND RBDOOM3_SOURCES	${DOOMCLASSIC_OPENAL_SOURCES})
-			endif()
 		else()
 			list(APPEND RBDOOM3_INCLUDES ${STUBAUDIO_INCLUDES})
 			list(APPEND RBDOOM3_SOURCES ${STUBAUDIO_SOURCES})
-			
-			if(DOOM_CLASSIC)
-				list(APPEND RBDOOM3_SOURCES	${DOOMCLASSIC_STUBAUDIO_SOURCES})
-			endif()
 		endif()
 		
 		if(USE_VULKAN)
@@ -1862,7 +1790,6 @@ else()
 			${RT_LIBRARY}
 			${SDLx_LIBRARY}
 			${OPENAL_LIBRARY}
-			${FFMPEG_LIBRARIES}
             ${ZLIB_LIBRARY}
             ${PNG_LIBRARY}
             ${JPEG_LIBRARY}

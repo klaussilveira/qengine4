@@ -555,16 +555,8 @@ void idCommonLocal::Frame()
 		// if the console or another gui is down, we don't need to hold the mouse cursor
 		bool chatting = false;
 
-		// DG: Add pause from com_pause cvar
-		// RB begin
-#if defined(USE_DOOMCLASSIC)
-		if( com_pause.GetInteger() || console->Active() || Dialog().IsDialogActive() || session->IsSystemUIShowing()
-				|| ( game && game->InhibitControls() && !IsPlayingDoomClassic() ) || ImGuiTools::ReleaseMouseForTools() )
-#else
 		if( com_pause.GetInteger() || console->Active() || Dialog().IsDialogActive() || session->IsSystemUIShowing()
 				|| ( game && game->InhibitControls() ) ||  ImGuiTools::ReleaseMouseForTools() )
-#endif
-			// RB end, DG end
 		{
 			// RB: don't release the mouse when opening a PDA or menu
 			// SRS - but always release at main menu after exiting game or demo
@@ -581,20 +573,10 @@ void idCommonLocal::Frame()
 			usercmdGen->InhibitUsercmd( INHIBIT_SESSION, false );
 		}
 
-		// RB begin
-#if defined(USE_DOOMCLASSIC)
-		const bool pauseGame = ( !mapSpawned
-								 || ( !IsMultiplayer()
-									  && ( Dialog().IsDialogPausing() || session->IsSystemUIShowing()
-										   || ( game && game->Shell_IsActive() ) || com_pause.GetInteger() ) ) )
-							   && !IsPlayingDoomClassic();
-#else
 		const bool pauseGame = ( !mapSpawned
 								 || ( !IsMultiplayer()
 									  && ( Dialog().IsDialogPausing() || session->IsSystemUIShowing()
 										   || ( game && game->Shell_IsActive() ) || com_pause.GetInteger() ) ) );
-#endif
-		// RB end
 
 		// save the screenshot and audio from the last draw if needed
 		if( aviCaptureMode )
@@ -859,17 +841,6 @@ void idCommonLocal::Frame()
 			userCmdMgr.PutUserCmdForPlayer( game->GetLocalClientNum(), newCmd );
 		}
 
-		// RB begin
-#if defined(USE_DOOMCLASSIC)
-		// If we're in Doom or Doom 2, run tics and upload the new texture.
-		// SRS - Add check for com_pause cvar to make sure window is in focus - if not classic game should be paused
-		if( ( GetCurrentGame() == DOOM_CLASSIC || GetCurrentGame() == DOOM2_CLASSIC ) && !( Dialog().IsDialogPausing() || session->IsSystemUIShowing() || com_pause.GetInteger() ) )
-		{
-			RunDoomClassicFrame();
-		}
-#endif
-		// RB end
-
 		// start the game / draw command generation thread going in the background
 		gameReturn_t ret = gameThread.RunGameAndDraw( numGameFrames, userCmdMgr, IsClient(), gameFrame - numGameFrames );
 
@@ -1000,61 +971,3 @@ void idCommonLocal::Frame()
 		return;
 	}
 }
-
-// RB begin
-#if defined(USE_DOOMCLASSIC)
-
-/*
-=================
-idCommonLocal::RunDoomClassicFrame
-=================
-*/
-void idCommonLocal::RunDoomClassicFrame()
-{
-	static int doomTics = 0;
-
-	if( DoomLib::expansionDirty )
-	{
-
-		// re-Initialize the Doom Engine.
-		DoomLib::Interface.Shutdown();
-		DoomLib::Interface.Startup( 1, false );
-		DoomLib::expansionDirty = false;
-	}
-
-
-	if( DoomLib::Interface.Frame( doomTics, &userCmdMgr ) )
-	{
-		Globals* data = ( Globals* )DoomLib::GetGlobalData( 0 );
-
-		idArray< unsigned int, 256 > palette;
-		std::copy( data->XColorMap, data->XColorMap + palette.Num(), palette.Ptr() );
-
-		// Do the palette lookup.
-		for( int row = 0; row < DOOMCLASSIC_RENDERHEIGHT; ++row )
-		{
-			for( int column = 0; column < DOOMCLASSIC_RENDERWIDTH; ++column )
-			{
-				const int doomScreenPixelIndex = row * DOOMCLASSIC_RENDERWIDTH + column;
-				const byte paletteIndex = data->screens[0][doomScreenPixelIndex];
-				const unsigned int paletteColor = palette[paletteIndex];
-				const byte red = ( paletteColor & 0xFF000000 ) >> 24;
-				const byte green = ( paletteColor & 0x00FF0000 ) >> 16;
-				const byte blue = ( paletteColor & 0x0000FF00 ) >> 8;
-
-				const int imageDataPixelIndex = row * DOOMCLASSIC_RENDERWIDTH * DOOMCLASSIC_BYTES_PER_PIXEL + column * DOOMCLASSIC_BYTES_PER_PIXEL;
-				doomClassicImageData[imageDataPixelIndex]		= red;
-				doomClassicImageData[imageDataPixelIndex + 1]	= green;
-				doomClassicImageData[imageDataPixelIndex + 2]	= blue;
-				doomClassicImageData[imageDataPixelIndex + 3]	= 255;
-			}
-		}
-	}
-
-	renderSystem->UploadImage( "_doomClassic", doomClassicImageData.Ptr(), DOOMCLASSIC_RENDERWIDTH, DOOMCLASSIC_RENDERHEIGHT );
-	doomTics++;
-}
-
-#endif
-// RB end
-

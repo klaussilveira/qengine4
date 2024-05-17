@@ -702,19 +702,6 @@ private:
 	void	PlayIntroGui();
 
 	void	ScrubSaveGameFileName( idStr& saveFileName ) const;
-
-	// RB begin
-#if defined(USE_DOOMCLASSIC)
-	// Doom classic support
-	void	RunDoomClassicFrame();
-	void	RenderDoomClassic();
-	bool	IsPlayingDoomClassic() const
-	{
-		return GetCurrentGame() != DOOM3_BFG;
-	}
-	void	PerformGameSwitch();
-#endif
-	// RB end
 };
 
 extern idCommonLocal commonLocal;
