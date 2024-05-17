@@ -451,7 +451,7 @@ void Sys_ReLaunch()
 		{
 			struct dirent entry;
 			struct dirent* result;
-			while( readdir_r( devfd, &entry, &result ) == 0 )
+			while( ( result = readdir( devfd ) ) != NULL )
 			{
 				const char* filename = result->d_name;
 				char* endptr = NULL;

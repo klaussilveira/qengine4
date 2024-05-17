@@ -586,7 +586,7 @@ int Sys_ListFiles( const char* directory, const char* extension, idStrList& list
 		return 0;
 	}
 
-	while( readdir_r( fdir, entry, &d ) == 0 && d != NULL )
+	while( ( d = readdir( fdir ) ) != NULL )
 	{
 		// DG end
 		idStr::snPrintf( search, sizeof( search ), "%s/%s", directory, d->d_name );
