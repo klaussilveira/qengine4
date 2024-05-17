@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(RBDoom3BFG)
+project(qengine4)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 6)
 	# set MSVC startup project
-	set_property (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT RBDoom3BFG)
+	set_property (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT qengine4)
 endif()
 	
 option(STANDALONE
@@ -1591,10 +1591,10 @@ if(MSVC)
 	
 	list(APPEND RBDOOM3_SOURCES ${WIN32_RESOURCES})
 	
-	add_executable(RBDoom3BFG WIN32 ${RBDOOM3_INCLUDES} ${RBDOOM3_SOURCES})
+	add_executable(qengine4 WIN32 ${RBDOOM3_INCLUDES} ${RBDOOM3_SOURCES})
 
-	add_dependencies(RBDoom3BFG idlib)
-	target_link_libraries(RBDoom3BFG
+	add_dependencies(qengine4 idlib)
+	target_link_libraries(qengine4
 		idlib
 		${DirectX_LIBRARIES}
 		dbghelp
@@ -1615,15 +1615,15 @@ if(MSVC)
 		
 	# set MSVC default debug directory on executable	
 	if(CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 8)
-		set_target_properties(RBDoom3BFG PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/..")
+		set_target_properties(qengine4 PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/..")
 	endif()
 	
 	#CMAKE_BINARY_DIR
 	if(CMAKE_CL_64)
-		install(TARGETS RBDoom3BFG
+		install(TARGETS qengine4
 			RUNTIME DESTINATION .)
 	else()
-		install(TARGETS RBDoom3BFG
+		install(TARGETS qengine4
 			RUNTIME DESTINATION .)
 	endif()	
 
@@ -1737,13 +1737,13 @@ else()
 	SEPARATE_ARGUMENTS(_compiler_FLAGS)
 	
 	if(USE_PRECOMPILED_HEADERS)
-		# we need to recreate the precompiled header for RBDoom3BFG 
+		# we need to recreate the precompiled header for qengine4
 		# (i.e. can't use the one created for idlib before)
 		# because some definitions (e.g. -D__IDLIB__ -D__DOOM_DLL__) differ
 		add_custom_target(precomp_header_rbdoom3bfg ALL
 				COMMAND ${CMAKE_CXX_COMPILER} ${_compiler_FLAGS} -x c++-header idlib/precompiled.h -o idlib/precompiled.h.gch
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-				COMMENT "Creating idlib/precompiled.h.gch for RBDoom3BFG"
+				COMMENT "Creating idlib/precompiled.h.gch for qengine4"
 				)
 	endif()
 	
@@ -1767,14 +1767,14 @@ else()
 		add_dependencies(precomp_header_rbdoom3bfg idlib)
 	endif()
 
-	add_executable(RBDoom3BFG WIN32 ${RBDOOM3_SOURCES})
+	add_executable(qengine4 WIN32 ${RBDOOM3_SOURCES})
 
 	if (USE_PRECOMPILED_HEADERS)
 		# make sure precompiled header is created before executable is compiled
-		add_dependencies(RBDoom3BFG precomp_header_rbdoom3bfg)
+		add_dependencies(qengine4 precomp_header_rbdoom3bfg)
 		
 		# make sure precompiled header is deleted after executable is compiled
-		add_dependencies(rm_precomp_header RBDoom3BFG)
+		add_dependencies(rm_precomp_header qengine4)
 	endif()	
 
 	if(NOT WIN32)
@@ -1782,7 +1782,7 @@ else()
 			set(RT_LIBRARY rt)
 		endif()
 
-		target_link_libraries(RBDoom3BFG
+		target_link_libraries(qengine4
 			idlib
 			${Vulkan_LIBRARIES}
 			${OPENGL_LIBRARIES}
